@@ -25,8 +25,8 @@ export default class Header extends Component {
                </Link>
                <nav className="collapse navbar-collapse">
                  <ul className="nav navbar-nav">
-                   <li><Link to="/"><i className="fa fa-list" />&nbsp;List</Link></li>
-                   <li><Link to="/create"><i className="fa fa-cube" />&nbsp;Create</Link></li>
+                   <li><Link to="/"><i className="fa fa-list" />&nbsp;Map List</Link></li>
+                   <li><Link to="/create-map"><i className="fa fa-cube" />&nbsp;Create Map</Link></li>
                    <li><Link to="/config"><i className="fa fa-cog" />&nbsp;Config</Link></li>
                  </ul>
                </nav>

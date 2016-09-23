@@ -11,7 +11,13 @@ module.exports = (config)=>{
 
   const User = bookshelf.Model.extend({
     tableName: "users",
-    toJSON(){}
+    toJSON: function(withContent){
+      const attrs = bookshelf.Model.prototype.toJSON.apply(this, arguments);
+      delete attrs.id;
+      delete attrs.shadow;
+      delete attrs.salt;
+      return attrs;
+    }
   }, {
     singin(username, password){
       return new Promise((resolve, reject)=>{
@@ -38,8 +44,16 @@ module.exports = (config)=>{
     })
   });
 
+  const Map = bookshelf.Model.extend({
+    tableName: "maps"
+  }, {
+    precheck: new Checkit({
+    })
+  });
+
   // exports
   return {
-    User
+    User,
+    Map
   };
 };
