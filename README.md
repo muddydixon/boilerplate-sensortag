@@ -14,7 +14,7 @@ Boilerplate SensorTag / Fluent / ElasticSearch / Kibana
 % docker run -d -p 24224:24224 -p 5601:5601 -p 9200:9200 muddydixon/fluentd-elasticsearch-kibana
 % curl -X PUT "http://192.168.99.100:9200/_template/template_1?pretty" --data @template.json
 % DEBUG=sensortag npm start
-% open 192.169.99.100:5601/
+% open http://192.169.99.100:5601/
 ```
 
 ## License
