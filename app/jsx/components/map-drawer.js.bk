@@ -1,0 +1,142 @@
+import React, {Component} from "react";
+import MapAction from "../actions/map-action";
+
+export default class MapDrawer extends Component {
+  constructor(props){
+    super(props);
+    this.state = {
+      isDrawing: false,
+      x: null,
+      y: null,
+      lines: [],
+      curr: "",
+
+      isMarking: false,
+      markers: [],
+
+      isCalibrate: false,
+      calibratePoints: [],
+
+      // padding + border (stroke width)
+      offset: {x: this.props.padding + 1, y: this.props.padding + 1}
+    };
+  }
+
+  onMapSave(){
+    const {lines, markers} = this.state;
+    MapAction.save({
+      lines,
+      markers
+    }).then(map => console.log(map));
+  }
+  onDrawBegin(ev){
+    if(this.state.isDrawing) return;
+    if(this.state.isMarking){
+      let [x, y] = [ev.nativeEvent.offsetX - this.state.offset.x, ev.nativeEvent.offsetY - this.state.offset.y];
+
+      this.setState({
+        markers: this.state.markers.concat({x, y, fill: "#0a3c91"}),
+        isMarking: false
+      });
+      return;
+    }else{
+      let [x, y] = [ev.nativeEvent.offsetX - this.state.offset.x, ev.nativeEvent.offsetY - this.state.offset.y];
+      this.setState({
+        isDrawing: true,
+        x, y
+      });
+    }
+  }
+  onDrawMove(ev){
+    if(this.state.isMarking || !this.state.isDrawing) return;
+    const [x, y] = [ev.nativeEvent.offsetX - this.state.offset.x, ev.nativeEvent.offsetY - this.state.offset.y];
+
+    this.setState({
+      curr: `M${this.state.x},${this.state.y}L${x},${y}`
+    });
+  }
+  onDrawEnd(ev){
+    if(this.state.isMarking || !this.state.isDrawing) return;
+
+    const [x, y] = [ev.nativeEvent.offsetX - this.state.offset.x, ev.nativeEvent.offsetY - this.state.offset.y];
+    this.setState({
+      isDrawing: false,
+      lines: this.state.lines.concat(`M${this.state.x},${this.state.y}L${x},${y}`)
+    });
+  }
+  addMarker(ev){
+    this.setState({isMarking: true});
+  }
+  getCursor(){
+    if(this.state.isMarking) return "crosshair";
+    return "pointer";
+  }
+
+  startCalibrate(){
+    if(this.state.isCalibrate) return;
+    this.setState({
+      isCalibrate: true
+    });
+
+    const {markers} = this.state;
+    const mlen = markers.length;
+
+    const mCenter = (()=>{
+      const center = {x: 0, y: 0};
+      markers.reduce((p, c)=>{ p.x += c.x; p.y += c.y; return p;}, center);
+      center.x /= mlen; center.y /= mlen;
+      return center;
+    })();
+    const maxDiff2 = Math.max(...markers.map(m => Math.pow(m.x - mCenter.x, 2) + Math.pow(m.y - mCenter.y, 2)));
+    const maxDiff  = Math.sqrt(maxDiff2);
+
+    const checkNum = Math.min(mlen * (mlen - 1) / 2, 10);
+    const checkIds = [];
+
+    while(checkIds.length < checkNum){
+      const x = (0|Math.random() * maxDiff * 2) - maxDiff;
+      const y = (0|Math.random() * maxDiff * 2) - maxDiff;
+      if(Math.pow(x, 2) + Math.pow(y, 2) < maxDiff2){
+        checkIds.push({x: x + mCenter.x, y: y + mCenter.y});
+      }
+    }
+
+    console.log(checkIds);
+    this.setState({
+      calibratePoints: checkIds
+    });
+  }
+
+  onCalibratePoint(ev){
+    const point = ev.target;
+    console.log(point);
+  }
+
+  render(){
+    const {width, height, padding} = this.props;
+    return <div className="container">
+      <div className="row">
+      <svg ref="svg" width={width + padding * 2} height={height + padding * 2}
+        onMouseDown={this.onDrawBegin.bind(this)}
+        onMouseUp={this.onDrawEnd.bind(this)}
+        onMouseMove={this.onDrawMove.bind(this)}
+        style={{cursor: this.getCursor()}}
+      >
+      <g width={width} height={height} transform={`translate(${padding}, ${padding})`}>
+      <rect width={width} height={height} stroke={"black"} fill={"none"} />
+      {this.state.lines.map( (line, id) => <path key={id} d={line} stroke={"black"} />)}
+      {this.state.isDrawing && <path d={this.state.curr} stroke={"black"} strokeOpacity={0.3} />}
+      {this.state.markers.map( (marker, id) => <circle key={id} cx={marker.x} cy={marker.y} r={10} fill={marker.fill} />)}
+      {this.state.isCalibrate && this.state.calibratePoints.map( (p, id) => <circle key={id} cx={p.x} cy={p.y} r={10} stroke={"#0a3c91"} opacity={0.3} stroke={"none"} fill={"red"} onClick={this.onCalibratePoint.bind(this)}/>)}
+      </g>
+      </svg>
+      </div>
+      <div className="row">
+      <button className="btn btn-info" onClick={this.onMapSave.bind(this)}>Save Map</button>&nbsp;
+      <button className="btn btn-success" disabled={this.state.isMarking} onClick={this.addMarker.bind(this)}>Add Marker</button>&nbsp;
+      <button className="btn btn-info" onClick={this.startCalibrate.bind(this)}>Calibrate Start</button>&nbsp;
+      <button className="btn btn-info" onClick={this.startCalibrate.bind(this)}>Calibrate Fix</button>
+      </div>
+      </div>;
+  }
+};

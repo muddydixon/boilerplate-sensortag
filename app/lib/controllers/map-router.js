@@ -17,6 +17,12 @@ module.exports = class MapRouter {
     router.get("/:mapId",     this.getMap);
     router.put("/:mapId",     this.modifyMap);
     router.delete("/:mapId",  this.deleteMap);
+
+    router.get("/:mapId/markers",    this.getMarkers);
+    router.post("/:mapId/markers",   this.createMarker);
+
+    router.get("/:mapId/calibrates",          this.getCalibrates);
+    router.get("/:mapId/calibrates/:pointId", this.calibrate);
   }
 
   // implementations
@@ -26,17 +32,27 @@ module.exports = class MapRouter {
     }).catch(next);
   }
   createMap(req, res, next){
-    console.log(req.body);
     // const [err, validated] = req.model.Map.precheck.validateSync(req.body);
     // if(err) return next(new errors.InvalidParameterError());
-    // return new req.model.Map({path: req.body.path}).save().then((map)=>{
-    //   res.status(201).json(map);
-    // }).catch(next);
+    return new req.model.Map({path: req.body.path}).save().then((map)=>{
+      res.status(201).json(map);
+    }).catch(next);
   }
   getMap(req, res, next){
   }
   modifyMap(req, res, next){
   }
   deleteMap(req, res, next){
+  }
+
+  getMarkers(req, res, next){
+  }
+  createMarker(req, res, next){
+  }
+  getCalibrates(req, res, next){
+  }
+  calibrate(req, res, next){
+  }
+  testCalibration(req, res, next){
   }
 };

@@ -1,6 +1,6 @@
 export default {
   name: "PositionDetector",
-  baseUrl: "/v1",
+  baseUrl: "",
   BASE_FETCH:    "BASE_FETCH",
   ERROR:         "ERROR"
 };
