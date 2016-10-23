@@ -19,4 +19,4 @@ Boilerplate SensorTag / Fluent / ElasticSearch / Kibana
 
 ## License
 
-Apache License Version 2.0
+Apache License Version 2.0 for Developers
