@@ -1,14 +1,23 @@
 const SensorTag = require("sensortag");
 const debug = require("debug")("sensortag");
 const config = require("config");
-const logger = require("fluent-logger");
+const Logger = require("fluent-logger");
 
-logger.configure("es.sensortag", {
+const interval = process.env.INTERVAL || 1000;
+const logger = Logger.createFluentSender("es.sensortag", {
   host: process.env.FLUENT_HOST || config.fluentd.host || "localhost",
   port: process.env.FLUENT_PORT || config.fluentd.port || 24224,
   timeout: process.env.FLUENT_TIMEOUT || config.fluentd.timeout || 3.0,
-  timeout: process.env.FLUENT_RECONNECT_INTERVAL || config.fluentd.reconnect_interval || 600000
+  reconnectInterval: process.env.FLUENT_RECONNECT_INTERVAL || config.fluentd.reconnect_interval || 600000
 });
+
+const emitLog = ((logger)=>{
+  return (tag, data)=>{
+    if(typeof data === "string") data = {message: data};
+    console.log(`${tag}: ${JSON.stringify(data)}`);
+    logger.emit(tag, data);
+  };
+})(logger);
 
 const ATTRS = [
   "IrTemperature",
@@ -60,44 +69,44 @@ SensorTag.discoverAll((tag)=>{
     if(err) exit(err);
     debug(`connect SensorTag ${tag._peripheral.id}`);
 
-    watch(1000, "IrTemperature", tag, (objTemp, ambTemp)=>{
-      logger.emit("tag", {objTemp, ambTemp, tag: tag.address});
+    watch(interval, "IrTemperature", tag, (objTemp, ambTemp)=>{
+      emitLog("tag", {objTemp, ambTemp, tag: tag.address});
     }).catch((err)=>{
       console.log(err);
     });
 
-    watch(1000, "Accelerometer", tag, (ax, ay, az)=>{
-      logger.emit("tag", {ax, ay, az, tag: tag.address});
+    watch(interval, "Accelerometer", tag, (ax, ay, az)=>{
+      emitLog("tag", {ax, ay, az, tag: tag.address});
     }).catch((err)=>{
       console.log(err);
     });
 
-    watch(1000, "Humidity", tag, (temp, hum)=>{
-      logger.emit("tag", {temp, hum, tag: tag.address});
+    watch(interval, "Humidity", tag, (temp, hum)=>{
+      emitLog("tag", {temp, hum, tag: tag.address});
     }).catch((err)=>{
       console.log(err);
     });
 
-    watch(1000, "Magnetometer", tag, (mx, my, mz)=>{
-      logger.emit("tag", {mx, my, mz, tag: tag.address});
+    watch(interval, "Magnetometer", tag, (mx, my, mz)=>{
+      emitLog("tag", {mx, my, mz, tag: tag.address});
     }).catch((err)=>{
       console.log(err);
     });
 
-    watch(1000, "BarometricPressure", tag, (pressure)=>{
-      logger.emit("tag", {pressure, tag: tag.address});
+    watch(interval, "BarometricPressure", tag, (pressure)=>{
+      emitLog("tag", {pressure, tag: tag.address});
     }).catch((err)=>{
       console.log(err);
     });
 
-    watch(1000, "Gyroscope", tag, (gx, gy, gz)=>{
-      logger.emit("tag", {gx, gy, gz, tag: tag.address});
+    watch(interval, "Gyroscope", tag, (gx, gy, gz)=>{
+      emitLog("tag", {gx, gy, gz, tag: tag.address});
     }).catch((err)=>{
       console.log(err);
     });
 
-    watch(1000, "Luxometer", tag, (lux)=>{
-      logger.emit("tag", {lux, tag: tag.address});
+    watch(interval, "Luxometer", tag, (lux)=>{
+      emitLog("tag", {lux, tag: tag.address});
     }).catch((err)=>{
       console.log(err);
     });
